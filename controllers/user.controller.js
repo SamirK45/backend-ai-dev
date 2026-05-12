@@ -120,7 +120,7 @@ export const verifyUserEMail = async (req, res) => {
 
     try {
         const { email, otp } = req.body;
-        userService.verifyUser({ email, otp });
+        await userService.verifyUser({ email, otp });
         res.status(200).json({ message: 'Email verified successfully' });
     } catch (error) {
 
