@@ -1,29 +1,23 @@
 import { sendVerificationEmail } from '../controllers/user.controller.js';
 import userModel from '../models/user.model.js';
-import config from '../config/config.js';
-
-export const ALLOWED_EMAIL_DOMAINS = config.allowedEmailDomains;
+import { getConfig } from '../config/config.js';
 
 export const createUser = async ({ email, password }) => {
-
 
     if (!email || !password) {
         throw new Error('Email and password are required')
     }
 
+    const config = await getConfig();
     const emailDomain = email.split('@')[1]?.toLowerCase();
     if (!emailDomain || !config.allowedEmailDomains.includes(emailDomain)) {
         throw new Error('Please use a valid email from a popular provider (Gmail, Outlook, Yahoo, etc.). Disposable emails are not allowed.')
     }
 
-
-
-
     const hashedPassword = await userModel.hashPassword(password)
     const min = Math.pow(10, config.otp.length - 1);
     const max = Math.pow(10, config.otp.length) - 1;
     const verificationCode = Math.floor(min + Math.random() * (max - min + 1)).toString();
-
 
     const user = await new userModel({
         email,
@@ -85,4 +79,3 @@ export const verifyUser = async ({ email, otp }) => {
         throw error;
     }
 }
-
