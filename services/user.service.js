@@ -1,22 +1,8 @@
 import { sendVerificationEmail } from '../controllers/user.controller.js';
 import userModel from '../models/user.model.js';
+import config from '../config/config.js';
 
-export const ALLOWED_EMAIL_DOMAINS = [
-    "gmail.com", "googlemail.com",
-    "outlook.com", "hotmail.com", "live.com", "msn.com",
-    "yahoo.com", "yahoo.co.in", "yahoo.co.uk",
-    "protonmail.com", "proton.me",
-    "icloud.com", "me.com", "mac.com",
-    "aol.com",
-    "zoho.com", "zohomail.in",
-    "mail.com",
-    "yandex.com", "yandex.ru",
-    "tutanota.com", "tuta.io",
-    "fastmail.com",
-    "gmx.com", "gmx.net",
-    "rediffmail.com",
-    "yopmail.com", "mailforspam.com", "mailinator.com",
-];
+export const ALLOWED_EMAIL_DOMAINS = config.allowedEmailDomains;
 
 export const createUser = async ({ email, password }) => {
 
@@ -26,7 +12,7 @@ export const createUser = async ({ email, password }) => {
     }
 
     const emailDomain = email.split('@')[1]?.toLowerCase();
-    if (!emailDomain || !ALLOWED_EMAIL_DOMAINS.includes(emailDomain)) {
+    if (!emailDomain || !config.allowedEmailDomains.includes(emailDomain)) {
         throw new Error('Please use a valid email from a popular provider (Gmail, Outlook, Yahoo, etc.). Disposable emails are not allowed.')
     }
 
@@ -34,7 +20,9 @@ export const createUser = async ({ email, password }) => {
 
 
     const hashedPassword = await userModel.hashPassword(password)
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const min = Math.pow(10, config.otp.length - 1);
+    const max = Math.pow(10, config.otp.length) - 1;
+    const verificationCode = Math.floor(min + Math.random() * (max - min + 1)).toString();
 
 
     const user = await new userModel({

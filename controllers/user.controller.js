@@ -1,6 +1,7 @@
 import userModel from '../models/user.model.js';
 import * as userService from '../services/user.service.js';
 import redisClient from '../services/redis.service.js';
+import config from '../config/config.js';
 
 import { validationResult } from 'express-validator';
 
@@ -80,7 +81,7 @@ export const logoutController = async (req, res) => {
 
     try {
         const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
-        redisClient.set(token, 'logout', 'EX', 60 * 60 * 5);
+        redisClient.set(token, 'logout', 'EX', config.tokenBlacklist.ttlSeconds);
         res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
         console.log(error);

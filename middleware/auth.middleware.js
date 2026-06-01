@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import redisClient from '../services/redis.service.js';
+import config from '../config/config.js';
 
 export const authUser = async (req,res,next)=>{
     try {
@@ -16,7 +17,7 @@ export const authUser = async (req,res,next)=>{
       }
         
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, config.jwt.secret);
         req.user = decoded;
         next();
     } catch (error) {

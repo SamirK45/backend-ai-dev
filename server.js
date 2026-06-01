@@ -1,20 +1,19 @@
 import app from "./app.js";
 import http from "http";
-import dotenv from "dotenv";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import projectModel from './models/project.model.js';
 import {generateContent}  from "./services/gemini.service.js";
+import config from './config/config.js';
 
-dotenv.config()
-const PORT = process.env.PORT || 3000
+const PORT = config.server.port;
 
 const server = http.createServer(app);
 
 const io = new Server(server,{
     cors: {
-        origin: '*',
+        origin: config.socketIO.cors.origin,
     }
 });
 
@@ -34,7 +33,7 @@ io.use(async (socket, next) => {
          }
 
            
-         const user = jwt.verify(token, process.env.JWT_SECRET);
+         const user = jwt.verify(token, config.jwt.secret);
          if (!user) {
               return next(new Error("Authentication error"));
          }
@@ -58,13 +57,13 @@ io.on('connection', socket => {
         const message = data.messages;
         console.log("message "+message);
 
-        const aiPresentInMessage = message.includes('@ai');
+        const aiPresentInMessage = message.includes(config.aiBot.triggerKeyword);
         console.log("aimessage " + aiPresentInMessage);
         socket.broadcast.to(socket.roomId).emit('project-message', data);
 
         if (aiPresentInMessage) {
             
-            const prompt = message.replace('@ai','')
+            const prompt = message.replace(config.aiBot.triggerKeyword,'')
 
             try {
               const result = await generateContent(prompt)
@@ -74,17 +73,17 @@ io.on('connection', socket => {
                 
                 messages: result,
                 sender:{
-                    _id:"ai",
-                    email:"AI BOT"
+                    _id: config.aiBot.id,
+                    email: config.aiBot.email
                 }
               })
             } catch (error) {
               console.error("AI generation error:", error);
               io.to(socket.roomId).emit('project-message',{
-                messages: JSON.stringify({ text: "Sorry, I encountered an error. Please try again." }),
+                messages: JSON.stringify({ text: config.aiBot.errorMessage }),
                 sender:{
-                    _id:"ai",
-                    email:"AI BOT"
+                    _id: config.aiBot.id,
+                    email: config.aiBot.email
                 }
               })
             }
