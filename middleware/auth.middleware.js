@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import redisClient from '../services/redis.service.js';
-import config from '../config/config.js';
+import { getConfig } from '../config/config.js';
 
 export const authUser = async (req,res,next)=>{
     try {
@@ -15,8 +15,8 @@ export const authUser = async (req,res,next)=>{
         res.cookie('token', '',);
             return res.status(401).json({error: 'Unauthorized User '})
       }
-        
 
+        const config = await getConfig();
         const decoded = jwt.verify(token, config.jwt.secret);
         req.user = decoded;
         next();
