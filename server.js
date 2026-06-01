@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import projectModel from './models/project.model.js';
 import {generateContent}  from "./services/gemini.service.js";
 import { getConfig } from './config/config.js';
+import { saveMessage } from "./services/message.service.js";
 
 const startServer = async () => {
     const config = await getConfig();
@@ -72,6 +73,15 @@ const startServer = async () => {
                 try {
                   const result = await generateContent(prompt)
                   console.log("AI result:", result);
+
+                  await saveMessage({
+                    projectId:socket.roomId,
+                    messages:result,
+                    sender:aiBot.id,
+                    type:"incoming"
+                  })
+
+                  
                   
                   io.to(socket.roomId).emit('project-message',{
                     
@@ -83,6 +93,16 @@ const startServer = async () => {
                   })
                 } catch (error) {
                   console.error("AI generation error:", error);
+
+                   const errorMsg = JSON.stringify({ text: aiBot.errorMessage });
+                  
+                  await saveMessage({
+                    projectId: socket.roomId,
+                    messages: errorMsg,
+                    sender: aiBot.id,
+                    type: 'incoming'
+                  });
+
                   io.to(socket.roomId).emit('project-message',{
                     messages: JSON.stringify({ text: aiBot.errorMessage }),
                     sender:{
