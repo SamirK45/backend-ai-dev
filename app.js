@@ -7,12 +7,17 @@ import cookieParser from "cookie-parser"
 import cors from 'cors'
 import aiRoutes from './routes/ai.routes.js'
 import messageRoutes from './routes/message.routes.js';
+import config from './config/config.js';
 
 const app = express()
-app.set('trust proxy', 1);
+app.set('trust proxy', config.server.trustProxy);
 connect()
-app.use(cors())
-app.use(morgan('dev'))
+app.use(cors({
+    origin: config.cors.origin,
+    methods: config.cors.methods,
+    credentials: config.cors.credentials,
+}))
+app.use(morgan(config.logging.format))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use('/users', userRoutes);

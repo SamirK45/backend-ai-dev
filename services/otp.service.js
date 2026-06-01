@@ -1,7 +1,5 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-
-dotenv.config();
+import config from "../config/config.js";
 
 // SMTP2GO transporter configuration
 // Docs: https://www.smtp2go.com/setupguide/node-js-script/
@@ -9,12 +7,12 @@ dotenv.config();
 // Recommended port: 2525 (also supports 8025, 587, 25)
 // TLS is available on the same ports
 const transporter = nodemailer.createTransport({
-  host: "mail.smtp2go.com",
-  port: 2525,
-  secure: false, // TLS will be used via STARTTLS on port 2525
+  host: config.smtp.host,
+  port: config.smtp.port,
+  secure: config.smtp.secure, // TLS will be used via STARTTLS on port 2525
   auth: {
-    user: process.env.SMTP2GO_USERNAME,
-    pass: process.env.SMTP2GO_PASSWORD,
+    user: config.smtp.auth.user,
+    pass: config.smtp.auth.pass,
   },
 });
 
@@ -34,7 +32,7 @@ transporter.verify()
 export const sendEmail = async ({ to, subject, html, text }) => {
   try {
     const info = await transporter.sendMail({
-      from: `"AI Developer" <${process.env.SMTP2GO_SENDER_EMAIL}>`,
+      from: `"${config.smtp.senderName}" <${config.smtp.senderEmail}>`,
       to,
       subject,
       html,

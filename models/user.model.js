@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose';
 import crypto from 'crypto';
+import config from '../config/config.js';
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -26,7 +27,7 @@ const userSchema = new mongoose.Schema({
 },{timestamps:true});
 
 userSchema.statics.hashPassword =async function(password){
-    return await bcrypt.hash(password, 10)
+    return await bcrypt.hash(password, config.bcrypt.saltRounds)
 }
 
 userSchema.methods.validatePassword = async function(password){
@@ -34,7 +35,7 @@ userSchema.methods.validatePassword = async function(password){
 }
 
 userSchema.methods.generateToken = function(){
-    return jwt.sign({email: this.email}, process.env.JWT_SECRET,{expiresIn: '5h'})
+    return jwt.sign({email: this.email}, config.jwt.secret,{expiresIn: config.jwt.expiresIn})
 }
 
 userSchema.methods.generateVerificationToken = function(){
