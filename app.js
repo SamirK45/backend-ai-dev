@@ -8,6 +8,7 @@ import cors from 'cors'
 import aiRoutes from './routes/ai.routes.js'
 import messageRoutes from './routes/message.routes.js';
 import { getConfig } from './config/config.js';
+import { pingHealthCheck } from './controllers/ping.health.controller.js';
 
 const app = express()
 
@@ -34,6 +35,8 @@ const initApp = async () => {
     app.get("/", (req, res) => {
         res.send("Hello World")
     })
+
+    app.get('/ping', pingHealthCheck);
 };
 
 initApp().catch(err => console.error("Failed to initialize app:", err));
